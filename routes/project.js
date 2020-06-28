@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const Project = require("../models/Project");
+const User = require("../models/User");
 
 router.get("/", async (req, res) => {
   try {
@@ -17,7 +18,19 @@ router.get("/:id", async (req, res) => {
     const project = await Project.findById(req.params.id)
       .populate("owner")
       .populate("roles")
-      .populate("tasks")
+      .populate({
+        path: "tasks",
+        populate: [
+          {
+            path: "assignee",
+            model: User,
+          },
+          {
+            path: "creator",
+            model: User,
+          },
+        ],
+      })
       .exec();
     res.json(project);
   } catch (err) {
