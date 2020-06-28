@@ -15,7 +15,10 @@ router.get("/", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   try {
-    const task = await Task.findById(req.params.id);
+    const task = await Task.findById(req.params.id)
+      .populate("creator")
+      .populate("assignees")
+      .exec();
     res.json(task);
   } catch (err) {
     res.status(400).send("Can't get data\n" + err);

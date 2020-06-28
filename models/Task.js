@@ -6,7 +6,7 @@ const taskSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
-  assignees: {
+  assignee: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true,
@@ -27,9 +27,11 @@ const taskSchema = new mongoose.Schema({
     type: Date,
   },
   status: {
-    type: String,
+    type: Number,
     required: true,
-    default: "pending",
+    default: 1,
+    min: 1,
+    max: 4,
   },
   difficult: {
     type: Number,

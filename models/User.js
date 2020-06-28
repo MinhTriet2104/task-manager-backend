@@ -13,6 +13,10 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  avatar: {
+    type: String,
+    default: "https://i.imgur.com/5bh5qpe.jpg",
+  },
   createAt: {
     type: Date,
     required: true,
