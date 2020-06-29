@@ -29,9 +29,12 @@ router.post("/", async (req, res) => {
   try {
     const task = new Task({
       creator: req.body.creator,
-      assignees: req.body.assignees,
+      assignee: req.body.assignee,
       name: req.body.name,
+      description: req.body.description,
       difficult: req.body.difficult,
+      status: req.body.status,
+      dueDate: req.body.dueDate,
     });
     const newTask = await task.save();
 
@@ -60,7 +63,7 @@ router.delete("/:id", async (req, res) => {
 
     await project.save();
 
-    res.send("Deleted Successfully");
+    res.status(200).send("Deleted Successfully");
   } catch (err) {
     res.status(400).send("Deleted Fail\n" + err);
   }

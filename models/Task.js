@@ -15,6 +15,9 @@ const taskSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  description: {
+    type: String,
+  },
   deliveryDate: {
     type: Date,
     required: true,
@@ -25,6 +28,7 @@ const taskSchema = new mongoose.Schema({
   },
   dueDate: {
     type: Date,
+    required: true,
   },
   status: {
     type: Number,
