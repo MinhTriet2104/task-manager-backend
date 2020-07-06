@@ -43,7 +43,7 @@ router.post("/", async (req, res) => {
 
     await project.save();
 
-    res.status(201).send("Created Successfully");
+    res.status(201).json(newTask);
   } catch (err) {
     res.status(400).send("Created Fail\n" + err);
   }
@@ -63,7 +63,7 @@ router.delete("/:id", async (req, res) => {
 
     await project.save();
 
-    res.status(200).send("Deleted Successfully");
+    res.status(200).json(deletedTask.id);
   } catch (err) {
     res.status(400).send("Deleted Fail\n" + err);
   }
