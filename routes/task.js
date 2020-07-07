@@ -96,7 +96,7 @@ router.patch("/:id", async (req, res) => {
     if (status) task.status = status;
 
     await task.save();
-    res.status(200).send("Updated Successfully");
+    res.status(200).json({ id: task.id, status: task.status });
   } catch (err) {
     res.status(400).send("Updated Fail\n" + err);
   }
