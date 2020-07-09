@@ -95,8 +95,8 @@ router.patch("/:id", async (req, res) => {
     if (dueDate) task.dueDate = dueDate;
     if (status) task.status = status;
 
-    await task.save();
-    res.status(200).json({ id: task.id, status: task.status });
+    const newTask = await task.save();
+    res.status(200).json({ id: newTask.id, status: newTask.status });
   } catch (err) {
     res.status(400).send("Updated Fail\n" + err);
   }
