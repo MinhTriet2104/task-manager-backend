@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const ProjectSchema = new mongoose.Schema({
+const projectSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
@@ -10,10 +10,10 @@ const ProjectSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
-  tasks: [
+  lanes: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Task",
+      ref: "Lane",
     },
   ],
   roles: [
@@ -29,4 +29,14 @@ const ProjectSchema = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model("Project", ProjectSchema);
+// Duplicate the ID field.
+projectSchema.virtual("id").get(function () {
+  return this._id.toHexString();
+});
+
+// Ensure virtual fields are serialised.
+projectSchema.set("toJSON", {
+  virtuals: true,
+});
+
+module.exports = mongoose.model("Project", projectSchema);

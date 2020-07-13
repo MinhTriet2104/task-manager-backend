@@ -24,6 +24,7 @@ app.use(cors());
 
 // Router
 const projectRouter = require("./routes/project");
+const laneRouter = require("./routes/lane");
 const taskRouter = require("./routes/task");
 const roleRouter = require("./routes/role");
 const userRouter = require("./routes/user");
@@ -32,8 +33,8 @@ const userRouter = require("./routes/user");
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
-
 app.use("/project", projectRouter);
+app.use("/lane", laneRouter);
 app.use("/task", taskRouter);
 app.use("/role", roleRouter);
 app.use("/user", userRouter);

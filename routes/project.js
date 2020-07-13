@@ -18,6 +18,7 @@ router.get("/:id", async (req, res) => {
     const project = await Project.findById(req.params.id)
       .populate("owner")
       .populate("roles")
+      .populate("lanes")
       .populate({
         path: "tasks",
         populate: [

@@ -45,4 +45,14 @@ const taskSchema = new mongoose.Schema({
   },
 });
 
+// Duplicate the ID field.
+taskSchema.virtual("id").get(function () {
+  return this._id.toHexString();
+});
+
+// Ensure virtual fields are serialised.
+taskSchema.set("toJSON", {
+  virtuals: true,
+});
+
 module.exports = mongoose.model("Task", taskSchema);
