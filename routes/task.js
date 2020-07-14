@@ -3,6 +3,7 @@ const router = express.Router();
 
 const Task = require("../models/Task");
 const Project = require("../models/Project");
+const Lane = require("../models/Lane");
 
 router.get("/", async (req, res) => {
   try {
@@ -27,23 +28,24 @@ router.get("/:id", async (req, res) => {
 
 router.post("/", async (req, res) => {
   try {
-    const task = new Task({
-      creator: req.body.creator,
-      assignee: req.body.assignee,
-      name: req.body.name,
-      description: req.body.description,
-      difficult: req.body.difficult,
-      status: req.body.status,
-      dueDate: req.body.dueDate,
-    });
-    const newTask = await task.save();
+    // const task = new Task({
+    //   creator: req.body.creator,
+    //   assignee: req.body.assignee,
+    //   name: req.body.name,
+    //   description: req.body.description,
+    //   difficult: req.body.difficult,
+    //   status: req.body.status,
+    //   dueDate: req.body.dueDate,
+    // });
+    // const newTask = await task.save();
 
-    const project = await Project.findById(req.body.projectId);
-    project.tasks.push(newTask.id);
+    const lane = await Lane.findById(req.body.laneId);
+    // project.lanes[index].tasks.push(newTask.id);
+    lane.tasks.push(req.body.taskId);
 
-    await project.save();
+    await lane.save();
 
-    res.status(201).json(newTask);
+    res.status(201).json(lane);
   } catch (err) {
     res.status(400).send("Created Fail\n" + err);
   }
@@ -91,9 +93,15 @@ router.patch("/:id", async (req, res) => {
     const dueDate = req.body.dueDate;
     const status = req.body.status;
 
+    if (status && status !== -1) {
+      task.status = status;
+    } else {
+      const deletedTask = await task.remove();
+      return res.status(200).json(deletedTask.id);
+    }
+
     if (dateAccept) task.dateAccept = dateAccept;
     if (dueDate) task.dueDate = dueDate;
-    if (status) task.status = status;
 
     const newTask = await task.save();
     res.status(200).json({ id: newTask.id, status: newTask.status });
