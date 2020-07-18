@@ -56,14 +56,12 @@ router.delete("/:id", async (req, res) => {
     const task = await Task.findById(req.params.id);
     const deletedTask = await task.remove();
 
-    const project = await Project.findOne({
-      tasks: deletedTask.id,
-    });
+    const lane = await Lane.findById(req.body.laneId);
 
-    const index = project.tasks.indexOf(deletedTask.id);
-    project.tasks.splice(index, 1);
+    const index = lane.tasks.indexOf(deletedTask.id);
+    lane.tasks.splice(index, 1);
 
-    await project.save();
+    await lane.save();
 
     res.status(200).json(deletedTask.id);
   } catch (err) {
@@ -91,20 +89,27 @@ router.patch("/:id", async (req, res) => {
 
     const dateAccept = req.body.dateAccept;
     const dueDate = req.body.dueDate;
-    const status = req.body.status;
-
-    if (status && status !== -1) {
-      task.status = status;
-    } else {
-      const deletedTask = await task.remove();
-      return res.status(200).json(deletedTask.id);
-    }
+    const srcLaneId = req.body.sourceLaneId;
+    const targetLaneId = req.body.targetLaneId;
 
     if (dateAccept) task.dateAccept = dateAccept;
     if (dueDate) task.dueDate = dueDate;
 
     const newTask = await task.save();
-    res.status(200).json({ id: newTask.id, status: newTask.status });
+
+    if (laneId) {
+      const srcLane = await Lane.findById(srcLaneId);
+      const targetLane = await Lane.findById(targetLaneId);
+
+      const index = srcLane.tasks.indexOf(newTask.id);
+      srcLane.tasks.splice(index, 1);
+      await srcLane.save();
+
+      targetLane.push(newTask.id);
+      await targetLane.save();
+    }
+
+    res.status(200).json(newTask);
   } catch (err) {
     res.status(400).send("Updated Fail\n" + err);
   }

@@ -7,7 +7,7 @@ const Project = require("../models/Project");
 router.get("/", async (req, res) => {
   try {
     const lane = await Lane.find({});
-    res.json(lane);
+    res.status(200).json(lane);
   } catch {
     res.status(400).send("Can't get data");
   }
@@ -16,7 +16,7 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const lane = await Lane.findById(req.params.id);
-    res.json(lane);
+    res.status(200).json(lane);
   } catch (err) {
     res.status(400).send("Can't get data\n" + err);
   }
