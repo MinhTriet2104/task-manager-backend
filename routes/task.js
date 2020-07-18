@@ -89,6 +89,7 @@ router.patch("/:id", async (req, res) => {
 
     const dateAccept = req.body.dateAccept;
     const dueDate = req.body.dueDate;
+    const tasks = req.body.tasks;
     const srcLaneId = req.body.sourceLaneId;
     const targetLaneId = req.body.targetLaneId;
 
@@ -97,19 +98,21 @@ router.patch("/:id", async (req, res) => {
 
     const newTask = await task.save();
 
-    if (laneId) {
+    if (tasks && srcLaneId && targetLaneId) {
       const srcLane = await Lane.findById(srcLaneId);
       const targetLane = await Lane.findById(targetLaneId);
 
-      const index = srcLane.tasks.indexOf(newTask.id);
-      srcLane.tasks.splice(index, 1);
-      await srcLane.save();
+      if (srcLaneId !== targetLaneId) {
+        const index = srcLane.tasks.indexOf(task.id);
+        srcLane.tasks.splice(index, 1);
+        await srcLane.save();
+      }
 
-      targetLane.push(newTask.id);
+      targetLane.tasks = tasks;
       await targetLane.save();
     }
 
-    res.status(200).json(newTask);
+    res.status(200).json(newTask.id);
   } catch (err) {
     res.status(400).send("Updated Fail\n" + err);
   }
