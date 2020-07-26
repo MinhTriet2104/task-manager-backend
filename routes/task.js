@@ -28,24 +28,23 @@ router.get("/:id", async (req, res) => {
 
 router.post("/", async (req, res) => {
   try {
-    // const task = new Task({
-    //   creator: req.body.creator,
-    //   assignee: req.body.assignee,
-    //   name: req.body.name,
-    //   description: req.body.description,
-    //   difficult: req.body.difficult,
-    //   status: req.body.status,
-    //   dueDate: req.body.dueDate,
-    // });
-    // const newTask = await task.save();
+    const task = new Task({
+      creator: req.body.creator,
+      assignee: req.body.assignee,
+      name: req.body.name,
+      description: req.body.description,
+      difficult: req.body.difficult,
+      dueDate: req.body.dueDate,
+    });
+    const newTask = await task.save();
 
     const lane = await Lane.findById(req.body.laneId);
     // project.lanes[index].tasks.push(newTask.id);
-    lane.tasks.push(req.body.taskId);
+    lane.tasks.push(newTask.id);
 
     await lane.save();
 
-    res.status(201).json(lane);
+    res.status(201).json(newTask.id);
   } catch (err) {
     res.status(400).send("Created Fail\n" + err);
   }
