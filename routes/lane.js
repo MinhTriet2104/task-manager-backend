@@ -25,7 +25,8 @@ router.get("/:id", async (req, res) => {
 router.post("/", async (req, res) => {
   try {
     const lane = new Lane({
-      name: req.body.name.toUpperCase(),
+      title: req.body.title.toUpperCase(),
+      color: req.body.color,
     });
     const newLane = await lane.save();
 
