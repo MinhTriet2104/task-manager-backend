@@ -19,6 +19,10 @@ io.on("connection", (socket) => {
   socket.on("chat message", (msg) => {
     console.log(msg);
   });
+
+  socket.on("disconnect", () => {
+    console.log("user is disconnect");
+  });
 });
 
 // Running
