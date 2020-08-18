@@ -13,12 +13,15 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json({ extended: true }));
 app.use(cors());
 
+const messages = [];
+
 // Handle Connection
 io.on("connection", (socket) => {
   console.log("a user connected");
 
   socket.on("chat message", (msg) => {
-    io.emit("server message", msg);
+    messages.push(msg);
+    io.emit("server message", messages);
   });
 
   socket.on("disconnect", () => {
