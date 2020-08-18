@@ -16,8 +16,9 @@ app.use(cors());
 // Handle Connection
 io.on("connection", (socket) => {
   console.log("a user connected");
+
   socket.on("chat message", (msg) => {
-    console.log(msg);
+    io.emit("server message", msg);
   });
 
   socket.on("disconnect", () => {
