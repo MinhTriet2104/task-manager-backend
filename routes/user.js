@@ -14,8 +14,10 @@ router.get("/", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
-    res.json(user);
+    const user = await User.find({ oauth2Id: req.params.id });
+
+    if (user) return res.json(user);
+    else return null;
   } catch (err) {
     res.status(400).send("Can't get data\n" + err);
   }
@@ -24,9 +26,10 @@ router.get("/:id", async (req, res) => {
 router.post("/", async (req, res) => {
   try {
     const user = new User({
-      email: req.body.email,
-      password: req.body.password,
+      oauth2Id: req.body.oauth2Id,
       username: req.body.username,
+      email: req.body.email,
+      avatar: req.body.avatar,
     });
     await user.save();
 
