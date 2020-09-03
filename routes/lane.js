@@ -41,25 +41,27 @@ router.post("/", async (req, res) => {
   }
 });
 
-// router.delete("/:id", async (req, res) => {
-//   try {
-//     const task = await Task.findById(req.params.id);
-//     const deletedTask = await task.remove();
+router.delete("/:id", async (req, res) => {
+  try {
+    // const lane = await Lane.findById(req.params.id);
+    const deletedLane = await Lane.findById(req.params.id);
+    // const deletedLane = await lane.remove();
 
-//     const project = await Project.findOne({
-//       tasks: deletedTask.id,
-//     });
+    const project = await Project.findOne({
+      lanes: deletedLane.id,
+    });
 
-//     const index = project.tasks.indexOf(deletedTask.id);
-//     project.tasks.splice(index, 1);
+    // const index = project.lanes.indexOf(deletedLane.id);
+    // project.lanes.splice(index, 1);
 
-//     await project.save();
+    // await project.save();
 
-//     res.status(200).json(deletedTask.id);
-//   } catch (err) {
-//     res.status(400).send("Deleted Fail\n" + err);
-//   }
-// });
+    // res.status(200).json(deletedLane.id);
+    res.status(200).json(project);
+  } catch (err) {
+    res.status(400).send("Deleted Fail\n" + err);
+  }
+});
 
 // router.put("/:id", async (req, res) => {
 //   try {
