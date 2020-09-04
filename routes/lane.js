@@ -1,8 +1,9 @@
 const express = require("express");
 const router = express.Router();
 
-const Lane = require("../models/Lane");
 const Project = require("../models/Project");
+const Lane = require("../models/Lane");
+const Task = require("../models/Task");
 
 router.get("/", async (req, res) => {
   try {
@@ -43,21 +44,25 @@ router.post("/", async (req, res) => {
 
 router.delete("/:id", async (req, res) => {
   try {
-    // const lane = await Lane.findById(req.params.id);
-    const deletedLane = await Lane.findById(req.params.id);
-    // const deletedLane = await lane.remove();
+    const lane = await Lane.findById(req.params.id);
+    const deletedLane = await lane.remove();
 
     const project = await Project.findOne({
       lanes: deletedLane.id,
     });
 
-    // const index = project.lanes.indexOf(deletedLane.id);
-    // project.lanes.splice(index, 1);
+    const index = project.lanes.indexOf(deletedLane.id);
+    project.lanes.splice(index, 1);
 
-    // await project.save();
+    await project.save();
 
-    // res.status(200).json(deletedLane.id);
-    res.status(200).json(project);
+    res.status(200).json(deletedLane.id);
+
+    const tasks = deletedLane.tasks;
+    tasks.forEach(async task => {
+      const removeTask = await Task.findById(task.id);
+      removeTask.remove();
+    });
   } catch (err) {
     res.status(400).send("Deleted Fail\n" + err);
   }
