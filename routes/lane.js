@@ -59,8 +59,8 @@ router.delete("/:id", async (req, res) => {
     res.status(200).json(deletedLane.id);
 
     const tasks = deletedLane.tasks;
-    tasks.forEach(async task => {
-      const removeTask = await Task.findById(task.id);
+    tasks.forEach(async (id) => {
+      const removeTask = await Task.findById(id);
       removeTask.remove();
     });
   } catch (err) {
