@@ -76,4 +76,22 @@ router.put("/:id", async (req, res) => {
   }
 });
 
+router.patch("/:id", async (req, res) => {
+  try {
+    const project = await Project.findById(req.params.id);
+    const lanes = project.lanes;
+
+    const lastIndex = req.body.lastIndex;
+    const newIndex = req.body.newIndex;
+
+    [lanes[lastIndex], lanes[newIndex]] = [lanes[newIndex], lanes[lastIndex]];
+    project.markModified("lanes");
+
+    await project.save();
+    res.status(200).send("Updated Successfully");
+  } catch (err) {
+    res.status(400).send("Updated Fail\n" + err);
+  }
+});
+
 module.exports = router;
