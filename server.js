@@ -28,6 +28,7 @@ const laneRouter = require("./routes/lane");
 const taskRouter = require("./routes/task");
 const roleRouter = require("./routes/role");
 const userRouter = require("./routes/user");
+const messageRouter = require("./routes/message");
 
 // Routes
 app.get("/", (req, res) => {
@@ -38,6 +39,7 @@ app.use("/lane", laneRouter);
 app.use("/task", taskRouter);
 app.use("/role", roleRouter);
 app.use("/user", userRouter);
+app.use("/message", messageRouter);
 
 // Not found route
 app.get("*", (req, res) => res.status(404).send("404 Not Found"));
