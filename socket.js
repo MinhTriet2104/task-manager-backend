@@ -19,15 +19,20 @@ const messages = [];
 
 // Handle Connection
 io.on("connection", (socket) => {
-  console.log("a user connected");
+  console.log("User connected");
 
-  socket.on("chat message", (msg) => {
-    messages.push(msg);
-    io.emit("server message", messages);
+  socket.on('join', function(roomId) {
+    socket.join(roomId);
+    console.log(`User joining room id: ${roomId}`)
+
+    socket.on("chat message", (msg) => {
+      messages.push(msg);
+      io.to(roomId).emit("server message", messages);
+    });
   });
 
   socket.on("disconnect", () => {
-    console.log("user is disconnect");
+    console.log("User is disconnect");
   });
 });
 
