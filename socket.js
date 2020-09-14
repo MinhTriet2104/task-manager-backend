@@ -21,13 +21,14 @@ const messages = [];
 io.on("connection", (socket) => {
   console.log("User connected");
 
-  socket.on('join', function(roomId) {
+  socket.on('join', (roomId) => {
     socket.join(roomId);
     console.log(`User joining room id: ${roomId}`)
 
     socket.on("chat message", (msg) => {
-      messages.push(msg);
-      io.to(roomId).emit("server message", messages);
+      // messages.push(msg);
+      // console.log(msg);
+      io.to(roomId).emit("server message", msg);
     });
   });
 
