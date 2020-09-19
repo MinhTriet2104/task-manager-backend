@@ -22,11 +22,11 @@ io.on("connection", (socket) => {
   console.log("User connected");
 
   socket.on("join", (roomId) => {
-    socket.leaveAll();
+    // socket.leaveAll();
     socket.removeAllListeners("chat message");
     socket.join(roomId);
     // console.log(`User socketId: ${socket.id}`);
-    // console.log(`${socket.id} joining room id: ${roomId}`);
+    console.log(`${socket.id} joining room id: ${roomId}`);
 
     socket.on("chat message", (msg) => {
       // messages.push(msg);
