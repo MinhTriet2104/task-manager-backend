@@ -52,6 +52,16 @@ router.post("/", async (req, res) => {
     .catch((err) => res.status(400).send("Created Fail\n" + err));
 });
 
+router.post("/:id", async (req, res) => {
+  try {
+    const project = await Project.findById(req.params.id);
+    if (!project) res.status(404).send();
+    else res.status(200).send();
+  } catch {
+    res.status(404).send();
+  }
+});
+
 router.delete("/:id", async (req, res) => {
   try {
     const project = await Project.findById(req.params.id);
