@@ -48,7 +48,7 @@ router.post("/", async (req, res) => {
   });
   project
     .save()
-    .then(() => res.status(201).send("Created Successfully"))
+    .then(() => res.status(201).json({ id: project.id }))
     .catch((err) => res.status(400).send("Created Fail\n" + err));
 });
 
