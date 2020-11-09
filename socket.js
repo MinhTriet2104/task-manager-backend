@@ -15,18 +15,20 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json({ extended: true }));
 app.use(cors());
 
-const messages = [];
+// const messages = [];
 
 // Handle Connection
 io.on("connection", (socket) => {
   console.log("User connected");
 
-  socket.on("join", (roomId) => {
+  socket.on("join", async (roomId) => {
     // socket.leaveAll();
     socket.removeAllListeners("chat message");
     socket.join(roomId);
     // console.log(`User socketId: ${socket.id}`);
     console.log(`${socket.id} joining room id: ${roomId}`);
+
+    // socket.to(roomId)
 
     socket.on("chat message", (msg) => {
       // messages.push(msg);
