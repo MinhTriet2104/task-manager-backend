@@ -6,6 +6,7 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const momment = require("moment");
+const axios = require("axios");
 
 var http = require("http").createServer(app);
 var io = require("socket.io")(http);
@@ -28,13 +29,22 @@ io.on("connection", (socket) => {
     // console.log(`User socketId: ${socket.id}`);
     console.log(`${socket.id} joining room id: ${roomId}`);
 
-    // socket.to(roomId)
+    let messages = [];
+    try {
+      const res = await axios.get("http://localhost:2104/message", {
+        projectId: roomId,
+      });
+      messages = await res.data;
+      console.log(`room ${roomId} messages: ${messages}`);
+      socket.emit("room messages", messages);
+    } catch (err) {
+      console.log(err);
+    }
 
     socket.on("chat message", (msg) => {
-      // messages.push(msg);
-      // console.log(msg);
+      messages.push(msg);
       console.log(`${msg.content} to ${roomId}`);
-      io.to(roomId).emit("server message", msg);
+      io.to(roomId).emit("server messages", messages);
     });
   });
 
