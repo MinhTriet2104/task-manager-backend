@@ -24,7 +24,7 @@ router.get("/:id", async (req, res) => {
           path: "tasks",
           populate: [
             {
-              path: "assignee",
+              path: "assignees",
               model: User,
             },
             {

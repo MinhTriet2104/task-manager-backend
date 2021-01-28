@@ -6,11 +6,12 @@ const taskSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
-  assignee: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
+  assignees: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+  ],
   name: {
     type: String,
     required: true,
