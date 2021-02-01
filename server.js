@@ -20,7 +20,13 @@ mongoose
 // Middlewares
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json({ extended: true }));
-app.use(cors());
+app.use(
+  cors({
+    origin: "*", // allow to server to accept request from different origin
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    credentials: true, // allow session cookie from browser to pass through
+  })
+);
 
 // Router
 const projectRouter = require("./routes/project");
@@ -29,6 +35,7 @@ const taskRouter = require("./routes/task");
 const roleRouter = require("./routes/role");
 const userRouter = require("./routes/user");
 const messageRouter = require("./routes/message");
+const subscriptionRouter = require("./routes/subscription");
 
 // Routes
 app.get("/", (req, res) => {
@@ -40,6 +47,7 @@ app.use("/task", taskRouter);
 app.use("/role", roleRouter);
 app.use("/user", userRouter);
 app.use("/message", messageRouter);
+app.use("/subscription", subscriptionRouter);
 
 // Not found route
 app.get("*", (req, res) => res.status(404).send("404 Not Found"));
