@@ -6,10 +6,19 @@ const roleSchema = new mongoose.Schema({
     required: true,
     default: "member",
   },
+  level: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true,
+  },
+  isOwner: {
+    type: Boolean,
+    default: false,
   },
   createAt: {
     type: Date,

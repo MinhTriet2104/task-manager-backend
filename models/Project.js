@@ -10,6 +10,12 @@ const projectSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
+  members: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+  ],
   lanes: [
     {
       type: mongoose.Schema.Types.ObjectId,
