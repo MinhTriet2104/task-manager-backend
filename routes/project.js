@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const Project = require("../models/Project");
+const Role = require("../models/Role");
 const User = require("../models/User");
 
 router.get("/", async (req, res) => {
@@ -113,6 +114,24 @@ router.patch("/:id", async (req, res) => {
     res.status(200).send("Updated Successfully");
   } catch (err) {
     res.status(400).send("Updated Fail\n" + err);
+  }
+});
+
+router.patch("/roles/:id", async (req, res) => {
+  try {
+    const reqRoles = req.body.roles;
+
+    reqRoles.forEach(async (reqRole) => {
+      const role = await Role.findById(reqRole.id);
+      role.level = reqRole.level;
+
+      await role.save();
+    });
+
+    res.status.send(200);
+  } catch (err) {
+    console.log(err);
+    res.status(404).send();
   }
 });
 
