@@ -59,6 +59,7 @@ router.post("/", async (req, res) => {
     name: req.body.name,
     owner: req.body.owner,
   });
+
   project
     .save()
     .then(() => res.status(201).json({ id: project.id }))
@@ -68,12 +69,59 @@ router.post("/", async (req, res) => {
 router.post("/:id", async (req, res) => {
   try {
     const project = await Project.findById(req.params.id);
+    const userId = req.body.userId;
+
+    // new member
+    if (project.members.indexOf(userId) === -1) {
+      const newRole = new Role({
+        user: userId,
+      });
+
+      const savedRole = await newRole.save();
+
+      project.members.push(userId);
+      project.roles.push(savedRole.id);
+
+      project.markModified("members");
+      project.markModified("roles");
+
+      await project.save();
+    }
+
     if (!project) res.status(404).send();
     else res.status(200).send();
   } catch {
     res.status(404).send();
   }
 });
+
+// router.post("/roles/:id", async (req, res) => {
+//   try {
+//     const reqRoles = req.body.roles;
+//     const roleList = [];
+
+//     reqRoles.forEach(async (role) => {
+//       const myRole = new Role({
+//         user: role.user,
+//         level: role.level,
+//       });
+//       const newRole = await myRole.save();
+
+//       roleList.push(newRole.id);
+//     });
+
+//     const project = await Project.findById(req.params.id);
+//     project.roles = roleList;
+
+//     console.log(project.roles);
+//     await project.save();
+
+//     res.status(200).send();
+//   } catch (err) {
+//     console.log(err);
+//     res.status(404).send();
+//   }
+// });
 
 router.delete("/:id", async (req, res) => {
   try {
@@ -128,7 +176,7 @@ router.patch("/roles/:id", async (req, res) => {
       await role.save();
     });
 
-    res.status.send(200);
+    res.status(200).send();
   } catch (err) {
     console.log(err);
     res.status(404).send();

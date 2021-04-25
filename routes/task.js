@@ -28,14 +28,7 @@ router.get("/:id", async (req, res) => {
 
 router.post("/", async (req, res) => {
   try {
-    const task = new Task({
-      creator: req.body.creator,
-      assignee: req.body.assignee,
-      name: req.body.name,
-      description: req.body.description,
-      difficult: req.body.difficult,
-      dueDate: req.body.dueDate,
-    });
+    const task = new Task({ ...req.body.task });
     const newTask = await task.save();
 
     const lane = await Lane.findById(req.body.laneId);

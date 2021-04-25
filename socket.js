@@ -24,27 +24,14 @@ io.on("connection", (socket) => {
 
   socket.on("join", async (roomId) => {
     // socket.leaveAll();
-    socket.removeAllListeners("chat message");
+    socket.removeAllListeners("connect project");
     socket.join(roomId);
-    // console.log(`User socketId: ${socket.id}`);
+    console.log(`User socketId: ${socket.id}`);
     console.log(`${socket.id} joining room id: ${roomId}`);
 
-    let messages = [];
-    try {
-      const res = await axios.get("http://localhost:2104/message", {
-        projectId: roomId,
-      });
-      messages = await res.data;
-      console.log(`room ${roomId} messages: ${messages}`);
-      socket.emit("room messages", messages);
-    } catch (err) {
-      console.log(err);
-    }
-
-    socket.on("chat message", (msg) => {
-      messages.push(msg);
-      console.log(`${msg.content} to ${roomId}`);
-      io.to(roomId).emit("server messages", messages);
+    socket.on("project change", () => {
+      console.log(`reset project on ${roomId}`);
+      io.to(roomId).emit("reload project");
     });
   });
 
