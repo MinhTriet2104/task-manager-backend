@@ -44,6 +44,11 @@ const taskSchema = new mongoose.Schema({
     min: 1,
     max: 5,
   },
+  complete: {
+    type: Boolean,
+    required: true,
+    default: false,
+  },
 });
 
 // Duplicate the ID field.

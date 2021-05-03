@@ -4,11 +4,13 @@ const router = express.Router();
 const crypto = require("crypto");
 const webpush = require("web-push");
 
+const User = require("../models/User");
+
 const subscriptions = {};
 const vapidKeys = {
-  privateKey: "bdSiNzUhUP6piAxLH-tW88zfBlWWveIx0dAsDO66aVU",
+  privateKey: "7GVY1ikHIcksy6CXs5AiL0Fp-x9nvGoVVQgnLwgq0WI",
   publicKey:
-    "BIN2Jc5Vmkmy-S3AUrcMlpKxJpLeVRAfu9WBqUbJ70SJOCWGCGXKY-Xzyh7HDr6KbRDGYHjqZ06OcS3BjD7uAm8",
+    "BC0HbCVa2teiohQY-mAOcerBCZNitvdbit9bIg7EzAKmxhZOxZi-wsUTLGv3XsvVgpb1qDF91x9E8OBhqySVKME",
 };
 
 webpush.setVapidDetails(
@@ -23,9 +25,7 @@ function createHash(input) {
   return md5sum.digest("hex");
 }
 
-router.get("/:id", async (req, res) => {
-  const subscriptionId = req.params.id;
-  const pushSubscription = subscriptions[subscriptionId];
+async function addTaskNotification(pushSubscription) {
   webpush
     .sendNotification(
       pushSubscription,
@@ -40,15 +40,42 @@ router.get("/:id", async (req, res) => {
     .catch((err) => {
       console.log(err);
     });
+}
+
+router.get("/:id", async (req, res) => {
+  const userId = req.params.id;
+
+  const user = await User.findById(userId);
+  const pushSubscription = user.pushSubscription;
+
+  webpush
+    .sendNotification(
+      pushSubscription,
+      JSON.stringify({
+        title: "You Have New Task!!!",
+        text: "HEY! Take a look at this brand new t-shirt!",
+        image: "/images/jason-leung-HM6TMmevbZQ-unsplash.jpg",
+        tag: "new-product",
+        url: "/new-product-jason-leung-HM6TMmevbZQ-unsplash.html",
+      })
+    )
+    .catch((err) => {
+      console.log(err);
+    });
 
   res.status(202).json({});
 });
 
 router.post("/", async (req, res) => {
+  const userId = req.body.userId;
   const subscriptionRequest = req.body.data;
-  const susbscriptionId = createHash(JSON.stringify(subscriptionRequest));
-  subscriptions[susbscriptionId] = subscriptionRequest;
-  res.status(201).json({ id: susbscriptionId });
+  
+  const user = await User.findById(userId);
+  user.pushSubscription = subscriptionRequest;
+
+  const savedUser = await user.save();
+
+  res.status(201).json({ id: savedUser.id, user: savedUser });
 });
 
 module.exports = router;

@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const notificationHandler = require("../notification");
 
 const Task = require("../models/Task");
 const Project = require("../models/Project");
@@ -28,6 +29,8 @@ router.get("/:id", async (req, res) => {
 
 router.post("/", async (req, res) => {
   try {
+    const project = req.body.project;
+
     const task = new Task({ ...req.body.task });
     const newTask = await task.save();
 
@@ -38,6 +41,10 @@ router.post("/", async (req, res) => {
     await lane.save();
 
     res.status(201).json(newTask.id);
+
+    newTask.assignees.forEach((assignee) => {
+      notificationHandler.addTaskNotification(assignee, newTask, project);
+    });
   } catch (err) {
     res.status(400).send("Created Fail\n" + err);
   }
@@ -70,6 +77,22 @@ router.put("/:id", async (req, res) => {
 
     await task.save();
     res.status(200).send("Updated Successfully");
+  } catch (err) {
+    res.status(400).send("Updated Fail\n" + err);
+  }
+});
+
+router.patch("/:id/detail", async (req, res) => {
+  try {
+    const task = await Task.findById(req.params.id);
+
+    for (let prop in req.body) {
+      task[prop] = req.body[prop];
+    }
+
+    const newTask = await task.save();
+
+    res.status(200).json(newTask.id);
   } catch (err) {
     res.status(400).send("Updated Fail\n" + err);
   }

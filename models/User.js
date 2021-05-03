@@ -26,6 +26,9 @@ const userSchema = new mongoose.Schema({
     required: true,
     default: Date.now,
   },
+  pushSubscription: {
+    type: Object,
+  },
 });
 
 // Duplicate the ID field.
