@@ -7,6 +7,7 @@ const app = express();
 const cors = require("cors");
 const momment = require("moment");
 const axios = require("axios");
+const Comment = require("./models/Comment");
 
 var http = require("http").createServer(app);
 var io = require("socket.io")(http);
@@ -32,6 +33,11 @@ io.on("connection", (socket) => {
     socket.on("project change", () => {
       console.log(`reset project on ${roomId}`);
       io.to(roomId).emit("reload project");
+    });
+
+    socket.on("new comment", (newCmt) => {
+      console.log(`load new cmt on ${roomId}`);
+      io.to(roomId).emit("load new comment", newCmt);
     });
   });
 

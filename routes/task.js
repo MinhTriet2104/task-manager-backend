@@ -4,7 +4,10 @@ const notificationHandler = require("../notification");
 
 const Task = require("../models/Task");
 const Project = require("../models/Project");
+const Comment = require("../models/Comment");
 const Lane = require("../models/Lane");
+
+const PER_PAGE = 10;
 
 router.get("/", async (req, res) => {
   try {
@@ -12,6 +15,33 @@ router.get("/", async (req, res) => {
     res.json(task);
   } catch {
     res.status(400).send("Can't get data");
+  }
+});
+
+router.get("/:id/comment", async (req, res) => {
+  try {
+    const page = +req.query.page;
+    const cachedNewCmt = +req.query.cachedNewCmt;
+
+    const skip = PER_PAGE * (page - 1) + cachedNewCmt;
+    const limit = PER_PAGE * page + 1;
+
+    const comments = await Comment.find({ taskId: req.params.id })
+      .sort("-time")
+      .skip(skip)
+      .limit(limit)
+      .populate("sender")
+      .exec();
+
+    let hasMoreCmt = false;
+    if (comments.length > 10) {
+      comments.length = 10;
+      hasMoreCmt = true;
+    }
+
+    res.json({ comments: comments, hasMoreCmt: hasMoreCmt });
+  } catch (err) {
+    res.status(400).send("Can't get data\n" + err);
   }
 });
 
@@ -24,6 +54,17 @@ router.get("/:id", async (req, res) => {
     res.json(task);
   } catch (err) {
     res.status(400).send("Can't get data\n" + err);
+  }
+});
+
+router.post("/:id/comment", async (req, res) => {
+  try {
+    let newComment = await Comment.create({ ...req.body.comment });
+    newComment = await newComment.populate("sender").execPopulate();
+
+    res.status(201).json(newComment);
+  } catch (err) {
+    res.status(400).send("Created Fail\n" + err);
   }
 });
 
