@@ -44,6 +44,10 @@ const taskSchema = new mongoose.Schema({
     min: 1,
     max: 5,
   },
+  list: {
+    type: Array,
+    default: [],
+  },
   complete: {
     type: Boolean,
     required: true,
