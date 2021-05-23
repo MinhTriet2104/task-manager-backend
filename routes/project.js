@@ -18,7 +18,14 @@ router.get("/", async (req, res) => {
 router.get("/user/:id", async (req, res) => {
   try {
     const userId = req.params.id;
-    const projects = await Project.find({ members: userId }).exec();
+    const projects = await Project.find({ members: userId })
+      .populate({
+        path: "lanes",
+        populate: {
+          path: "tasks",
+        },
+      })
+      .exec();
     res.json(projects);
   } catch {
     res.status(400).send("Can't get data");

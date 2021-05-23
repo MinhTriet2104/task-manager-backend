@@ -1,9 +1,10 @@
 const express = require("express");
+const moment = require("moment");
 const router = express.Router();
 const notificationHandler = require("../notification");
 
 const Task = require("../models/Task");
-const Project = require("../models/Project");
+const User = require("../models/User");
 const Comment = require("../models/Comment");
 const Lane = require("../models/Lane");
 
@@ -83,8 +84,36 @@ router.post("/", async (req, res) => {
 
     res.status(201).json(newTask.id);
 
-    newTask.assignees.forEach((assignee) => {
-      notificationHandler.addTaskNotification(assignee, newTask, project);
+    newTask.assignees.forEach(async (assignee) => {
+      // notificationHandler.addTaskNotification(assignee, newTask, project);
+
+      const curUser = await User.findById(assignee);
+      if (!curUser.notifications[project.id])
+        curUser.notifications[project.id] = [];
+
+      curUser.notifications[project.id].push({
+        type: "expire 1h",
+        taskId: newTask.id,
+        createAt: moment(newTask.dueDate).subtract(1, "hours").calendar(),
+        dueDate: newTask.dueDate,
+        seen: false,
+      });
+      curUser.notifications[project.id].push({
+        type: "expire 1d",
+        taskId: newTask.id,
+        createAt: moment(newTask.dueDate).subtract(1, "days").calendar(),
+        dueDate: newTask.dueDate,
+        seen: false,
+      });
+
+      curUser.notifications[project.id].push({
+        type: "add",
+        taskId: newTask.id,
+        createAt: moment(newTask.createAt).fromNow(),
+        seen: false,
+      });
+
+      curUser.save();
     });
   } catch (err) {
     res.status(400).send("Created Fail\n" + err);

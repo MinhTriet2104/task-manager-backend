@@ -29,6 +29,14 @@ const userSchema = new mongoose.Schema({
   pushSubscription: {
     type: Object,
   },
+  notifications: {
+    type: Object,
+    default: {},
+  },
+  isAdmin: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 // Duplicate the ID field.
