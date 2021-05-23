@@ -2,19 +2,45 @@ const express = require("express");
 const router = express.Router();
 
 const User = require("../models/User");
+let totalItems;
 
 router.get("/", async (req, res) => {
   try {
-    const user = await User.find({});
-    res.json(user);
-  } catch {
-    res.status(400).send("Can't get data");
+    const page = +req.query.page;
+    const perPage = +req.query.perPage;
+    const keyword = req.query.keyword;
+
+    const skip = perPage * (page - 1);
+    const limit = perPage * page + 1;
+
+    let user;
+    if (keyword === "") {
+      console.log(skip);
+      console.log(limit);
+      user = await User.find({}).sort("-time").skip(skip).limit(limit).exec();
+    } else {
+      user = await User.find({ email: { $regex: keyword, $options: "i" } })
+        .sort("-time")
+        .skip(skip)
+        .limit(limit)
+        .exec();
+    }
+    if (!totalItems)
+      totalItems = await User.countDocuments({}).exec();
+
+    res.json({ user: user, totalItems: totalItems });
+  } catch (err) {
+    res.status(400).send("Can't get data\n" + err);
   }
 });
 
 router.get("/:id", async (req, res) => {
   try {
-    const user = await User.findOne({ oauth2Id: req.params.id }).exec();
+    let user = await User.find({ oauth2Id: req.params.id }).exec();
+    user = user[0];
+    if (!user) {
+      user = await User.findById(req.params.id);
+    }
 
     return res.json(user);
   } catch (err) {
@@ -63,23 +89,20 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-// router.patch("/:id", async (req, res) => {
-//   try {
-//     const task = await Task.findById(req.params.id);
+router.patch("/:id", async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
 
-//     const dateAccept = req.body.dateAccept;
-//     const dueDate = req.body.dueDate;
-//     const status = req.body.status;
+    const notifications = req.body.notifications;
 
-//     if (dateAccept) task.dateAccept = dateAccept;
-//     if (dueDate) task.dueDate = dueDate;
-//     if (status) task.status = status;
+    if (notifications) user.notifications = notifications;
 
-//     await task.save();
-//     res.status(200).send("Updated Successfully");
-//   } catch (err) {
-//     res.status(400).send("Updated Fail\n" + err);
-//   }
-// });
+    const savedUser = await user.save();
+
+    res.status(200).json(savedUser);
+  } catch (err) {
+    res.status(400).send("Updated Fail\n" + err);
+  }
+});
 
 module.exports = router;
