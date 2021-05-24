@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 
 const User = require("../models/User");
-let totalItems;
 
 router.get("/", async (req, res) => {
   try {
@@ -11,7 +10,7 @@ router.get("/", async (req, res) => {
     const keyword = req.query.keyword;
 
     const skip = perPage * (page - 1);
-    const limit = perPage * page + skip;
+    const limit = perPage * page;
 
     let user;
     if (keyword === "") {
@@ -23,8 +22,7 @@ router.get("/", async (req, res) => {
         .limit(limit)
         .exec();
     }
-    if (!totalItems)
-      totalItems = await User.countDocuments({}).exec();
+    const totalItems = await User.countDocuments({}).exec();
 
     res.json({ user: user, totalItems: totalItems });
   } catch (err) {
@@ -83,6 +81,21 @@ router.put("/:id", async (req, res) => {
 
     await user.save();
     res.status(200).send("Updated Successfully");
+  } catch (err) {
+    res.status(400).send("Updated Fail\n" + err);
+  }
+});
+
+router.patch("/:id/edit", async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+
+    user.username = req.body.username;
+    user.isAdmin = req.body.isAdmin;
+
+    const savedUser = await user.save();
+
+    res.status(200).json(savedUser);
   } catch (err) {
     res.status(400).send("Updated Fail\n" + err);
   }
