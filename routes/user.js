@@ -11,12 +11,10 @@ router.get("/", async (req, res) => {
     const keyword = req.query.keyword;
 
     const skip = perPage * (page - 1);
-    const limit = perPage * page + 1;
+    const limit = perPage * page + skip;
 
     let user;
     if (keyword === "") {
-      console.log(skip);
-      console.log(limit);
       user = await User.find({}).sort("-time").skip(skip).limit(limit).exec();
     } else {
       user = await User.find({ email: { $regex: keyword, $options: "i" } })
@@ -67,8 +65,9 @@ router.post("/", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
-    await user.remove();
-    res.send("Deleted Successfully");
+
+    // await user.remove();
+    // res.send("Deleted Successfully");
   } catch (err) {
     res.status(400).send("Deleted Fail\n" + err);
   }
