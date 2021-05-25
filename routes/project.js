@@ -4,11 +4,49 @@ const router = express.Router();
 const Project = require("../models/Project");
 const Role = require("../models/Role");
 const User = require("../models/User");
+const Lane = require("../models/Lane");
+const Task = require("../models/Task");
 
 router.get("/", async (req, res) => {
   try {
-    const projects = await Project.find({});
-    res.json(projects);
+    const page = +req.query.page;
+    const perPage = +req.query.perPage;
+    const keyword = req.query.keyword;
+
+    const skip = perPage * (page - 1);
+    const limit = perPage * page;
+
+    let projects;
+    let totalItems;
+    if (keyword === "") {
+      projects = await Project.find({})
+        .populate({
+          path: "lanes",
+        })
+        .sort("-time")
+        .skip(skip)
+        .limit(limit)
+        .exec();
+
+      totalItems = await Project.countDocuments({}).exec();
+    } else {
+      projects = await Project.find({
+        name: { $regex: keyword, $options: "i" },
+      })
+        .populate({
+          path: "lanes",
+        })
+        .sort("-time")
+        .skip(skip)
+        .limit(limit)
+        .exec();
+
+      totalItems = await Project.countDocuments({
+        name: { $regex: keyword, $options: "i" },
+      }).exec();
+    }
+
+    res.json({ projects: projects, totalItems: totalItems });
   } catch {
     res.status(400).send("Can't get data");
   }
@@ -132,9 +170,29 @@ router.post("/:id", async (req, res) => {
 
 router.delete("/:id", async (req, res) => {
   try {
-    const project = await Project.findById(req.params.id);
+    const project = await Project.findById(req.params.id)
+      .populate({
+        path: "lanes",
+      })
+      .exec();
+
+    project.lanes.forEach((laneId) => {
+      Lane.findById(laneId, function (err, lane) {
+        lane.tasks.forEach((taskId) => {
+          Task.findById(taskId, function (err, task) {
+            if (!err) {
+              task.remove();
+            }
+          });
+          if (!err) {
+            lane.remove();
+          }
+        });
+      });
+    });
+
     await project.remove();
-    res.send("Deleted Successfully");
+    res.status(200).send("Deleted Successfully");
   } catch (err) {
     res.status(400).send("Deleted Fail\n" + err);
   }
