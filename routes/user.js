@@ -30,6 +30,16 @@ router.get("/", async (req, res) => {
   }
 });
 
+router.get("/:id/login", async (req, res) => {
+  try {
+    let user = await User.findOne({ oauth2Id: req.params.id }).exec();
+
+    return res.json(user);
+  } catch (err) {
+    res.status(400).send("Can't get data\n" + err);
+  }
+});
+
 router.get("/:id", async (req, res) => {
   try {
     let user = await User.find({ oauth2Id: req.params.id }).exec();

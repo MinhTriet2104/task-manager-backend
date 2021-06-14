@@ -28,6 +28,12 @@ const projectSchema = new mongoose.Schema({
       ref: "Role",
     },
   ],
+  removedMembers: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+  ],
   createAt: {
     type: Date,
     required: true,

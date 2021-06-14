@@ -6,6 +6,7 @@ const Role = require("../models/Role");
 const User = require("../models/User");
 const Lane = require("../models/Lane");
 const Task = require("../models/Task");
+const History = require("../models/History");
 
 router.get("/", async (req, res) => {
   try {
@@ -70,7 +71,7 @@ router.get("/user/:id", async (req, res) => {
   }
 });
 
-router.get("/:id", async (req, res) => {
+router.get("/:id$", async (req, res) => {
   try {
     const project = await Project.findById(req.params.id)
       .populate("owner")
@@ -99,10 +100,23 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+router.get("/:id/history", async (req, res) => {
+  try {
+    const history = await History.find({ projectId: req.params.id })
+      .populate("user")
+      .sort("-time")
+      .exec();
+    res.json(history);
+  } catch (err) {
+    res.status(400).send("Can't get data\n" + err);
+  }
+});
+
 router.post("/", async (req, res) => {
   const project = new Project({
     name: req.body.name,
     owner: req.body.owner,
+    members: [req.body.owner]
   });
 
   project
@@ -111,7 +125,7 @@ router.post("/", async (req, res) => {
     .catch((err) => res.status(400).send("Created Fail\n" + err));
 });
 
-router.post("/:id", async (req, res) => {
+router.post("/:id$", async (req, res) => {
   try {
     const project = await Project.findById(req.params.id);
     const userId = req.body.userId;
@@ -135,6 +149,45 @@ router.post("/:id", async (req, res) => {
 
     if (!project) res.status(404).send();
     else res.status(200).send();
+  } catch {
+    res.status(404).send();
+  }
+});
+
+// add member
+router.post("/:id/addmember", async (req, res) => {
+  try {
+    const project = await Project.findById(req.params.id);
+    const userId = req.body.userId;
+
+    project.members.push(userId);
+    project.markModified("members");
+
+    await project.save();
+
+    res.status(200).send();
+  } catch {
+    res.status(404).send();
+  }
+});
+
+// add role
+router.post("/:id/addrole", async (req, res) => {
+  try {
+    const project = await Project.findById(req.params.id);
+    const userId = req.body.userId;
+
+    const newRole = new Role({
+      user: userId,
+    });
+
+    const savedRole = await newRole.save();
+    project.roles.push(savedRole.id);
+    project.markModified("roles");
+
+    await project.save();
+
+    res.status(200).send();
   } catch {
     res.status(404).send();
   }
@@ -191,6 +244,15 @@ router.delete("/:id", async (req, res) => {
       });
     });
 
+    project.roles.forEach((roleId) => {
+      Role.findById(roleId, function (err, role) {
+        !err && role.remove();
+      });
+    });
+
+    const histories = await History.find({ projectId: project.id }).exec();
+    histories.forEach(history => history.remove());
+
     await project.remove();
     res.status(200).send("Deleted Successfully");
   } catch (err) {
@@ -230,8 +292,12 @@ router.patch("/:id", async (req, res) => {
   }
 });
 
-router.patch("/roles/:id", async (req, res) => {
+router.patch("/setting/:id", async (req, res) => {
   try {
+    const project = await Project.findById(req.params.id);
+    project.name = req.body.projectName;
+    await project.save();
+
     const reqRoles = req.body.roles;
 
     reqRoles.forEach(async (reqRole) => {

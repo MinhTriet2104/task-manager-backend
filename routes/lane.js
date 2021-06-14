@@ -4,6 +4,7 @@ const router = express.Router();
 const Project = require("../models/Project");
 const Lane = require("../models/Lane");
 const Task = require("../models/Task");
+const History = require("../models/History");
 
 router.get("/", async (req, res) => {
   try {
@@ -50,10 +51,19 @@ router.delete("/:id", async (req, res) => {
     const project = await Project.findOne({
       lanes: deletedLane.id,
     });
+    const projectId = project.id;
 
     const index = project.lanes.indexOf(deletedLane.id);
     project.lanes.splice(index, 1);
 
+    const deletedLaneHistory = new History({
+      user: req.body.userId,
+      projectId: projectId,
+      content: `deleted the Lane: ${deletedLane.title}`
+    });
+    deletedLaneHistory.save();
+
+    project.markModified('lanes');
     await project.save();
 
     res.status(200).json(deletedLane.id);
@@ -61,7 +71,14 @@ router.delete("/:id", async (req, res) => {
     const tasks = deletedLane.tasks;
     tasks.forEach(async (id) => {
       const removeTask = await Task.findById(id);
+      const deletedTaskHistory = new History({
+        user: req.body.userId,
+        projectId: projectId,
+        content: `The Task: ${removeTask.name} has been deleted along with the Lane: ${deletedLane.title}`
+      });
+
       removeTask.remove();
+      deletedTaskHistory.save();
     });
   } catch (err) {
     res.status(400).send("Deleted Fail\n" + err);

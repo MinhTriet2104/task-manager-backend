@@ -43,7 +43,27 @@ router.post("/", async (req, res) => {
 
 router.delete("/:id", async (req, res) => {
   try {
-    const role = await Role.findByIdAndDelete(req.params.id);
+    const role = await Role.findById(req.params.id);
+    const project = await Project.findById(req.body.projectId);
+
+    project.members = project.members.filter(
+      (member) => member.id !== role.user
+    );
+    project.roles = project.roles.filter(
+      (projectRole) => projectRole.id !== role.id
+    );
+    if (project.removedMembers && project.removedMembers.length >= 0) {
+      project.removedMembers.push(role.user);
+    } else {
+      project.removedMembers = [role.user];
+    }
+
+    project.markModified("members");
+    project.markModified("roles");
+    project.markModified("removedMembers");
+
+    await project.save();
+
     await role.remove();
     res.send("Deleted Successfully");
   } catch (err) {
