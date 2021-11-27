@@ -88,18 +88,18 @@ router.post("/", async (req, res) => {
       try {
       // notificationHandler.addTaskNotification(assignee, newTask, project);
 
-        const curUser = await User.findById(assignee.id);
+        const curUser = await User.findById(assignee);
         if (!curUser.notifications[project.id])
           curUser.notifications[project.id] = [];
 
-        curUser.notifications[project.id].push({
-          type: "expire 1h",
+        curUser.notifications[project.id].unshift({
+          type: "add",
           taskId: newTask.id,
-          createAt: moment(newTask.dueDate).subtract(1, "hours").calendar(),
-          dueDate: newTask.dueDate,
+          createAt: moment(),
           seen: false,
         });
-        curUser.notifications[project.id].push({
+        
+        curUser.notifications[project.id].unshift({
           type: "expire 1d",
           taskId: newTask.id,
           createAt: moment(newTask.dueDate).subtract(1, "days").calendar(),
@@ -107,10 +107,11 @@ router.post("/", async (req, res) => {
           seen: false,
         });
 
-        curUser.notifications[project.id].push({
-          type: "add",
+        curUser.notifications[project.id].unshift({
+          type: "expire 1h",
           taskId: newTask.id,
-          createAt: moment(newTask.createAt).fromNow(),
+          createAt: moment(newTask.dueDate).subtract(1, "hours").calendar(),
+          dueDate: newTask.dueDate,
           seen: false,
         });
 
@@ -122,7 +123,7 @@ router.post("/", async (req, res) => {
       }
     });
 
-    res.status(201).json(newTask.id);
+    res.status(201).json(newTask);
   } catch (err) {
     res.status(400).send("Created Fail\n" + err);
   }
@@ -153,6 +154,16 @@ router.delete("/:id", async (req, res) => {
     lane.tasks.splice(index, 1);
 
     await lane.save();
+
+    deletedTask.assignees.forEach(async assignee => {
+      const curUser = await User.findById(assignee);
+
+      const filteredNotification = curUser.notifications[project.id].filter(notify => notify.taskId !== deletedTask.id);
+      curUser.notifications[project.id] = filteredNotification;
+
+      curUser.markModified('notifications');
+      curUser.save();
+    });
 
     res.status(200).json(deletedTask.id);
   } catch (err) {

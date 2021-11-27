@@ -131,7 +131,7 @@ router.post("/:id$", async (req, res) => {
     const userId = req.body.userId;
 
     // new member
-    if (project.members.indexOf(userId) === -1) {
+    if (!project.removedMembers.includes(userId) && project.members.indexOf(userId) === -1) {
       const newRole = new Role({
         user: userId,
       });
@@ -149,6 +149,31 @@ router.post("/:id$", async (req, res) => {
 
     if (!project) res.status(404).send();
     else res.status(200).send();
+  } catch {
+    res.status(404).send();
+  }
+});
+
+// add user
+router.post("/:id/adduser", async (req, res) => {
+  try {
+    const project = await Project.findById(req.params.id);
+    const user = await User.findOne({ email: req.body.email });
+
+    project.members.push(user.id);
+    project.markModified("members");
+
+    const newRole = new Role({
+      user: user.id,
+    });
+
+    const savedRole = await newRole.save();
+    project.roles.push(savedRole.id);
+    project.markModified("roles");
+
+    await project.save();
+
+    res.status(200).send();
   } catch {
     res.status(404).send();
   }
@@ -289,6 +314,17 @@ router.patch("/:id", async (req, res) => {
     res.status(200).send("Updated Successfully");
   } catch (err) {
     res.status(400).send("Updated Fail\n" + err);
+  }
+});
+
+router.get("/setting/:id/getRemovedMembers", async (req, res) => {
+  try {
+    const project = await Project.findById(req.params.id).populate("removedMembers").exec();
+
+    res.json(project.removedMembers);
+  } catch (err) {
+    console.log(err);
+    res.status(404).send("Can't get data\n" + err);
   }
 });
 

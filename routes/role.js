@@ -3,6 +3,7 @@ const router = express.Router();
 
 const Role = require("../models/Role");
 const Project = require("../models/Project");
+const User = require("../models/User");
 
 router.get("/", async (req, res) => {
   try {
@@ -41,17 +42,44 @@ router.post("/", async (req, res) => {
   }
 });
 
+router.post("/:id/unban", async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    const project = await Project.findById(req.body.projectId);
+
+    if (project.removedMembers) {
+      const index = project.removedMembers.indexOf(user.id);
+      project.removedMembers.splice(index, 1);
+    }
+
+    project.markModified("removedMembers");
+
+    await project.save();
+    res.send("Unban Successfully");
+  } catch (err) {
+    res.status(400).send("Unban Fail\n" + err);
+  }
+});
+
 router.delete("/:id", async (req, res) => {
   try {
     const role = await Role.findById(req.params.id);
     const project = await Project.findById(req.body.projectId);
 
-    project.members = project.members.filter(
-      (member) => member.id !== role.user
-    );
-    project.roles = project.roles.filter(
-      (projectRole) => projectRole.id !== role.id
-    );
+    // const members = project.members.filter(
+    //   (member) => member.id !== role.user
+    // );
+    if (project.members) {
+      const memberIndex = project.members.findIndex((member) => member.id === role.user);
+      project.members.splice(memberIndex, 1);
+    }
+    // const roles = project.roles.filter(
+    //   (projectRole) => projectRole.id !== role.id
+    // );
+    if (project.roles) {
+      const roleIndex = project.roles.findIndex((projectRole) => projectRole.id === role.id);
+      project.roles.splice(roleIndex, 1);
+    }
     if (project.removedMembers && project.removedMembers.length >= 0) {
       project.removedMembers.push(role.user);
     } else {

@@ -40,6 +40,29 @@ router.get("/:id/login", async (req, res) => {
   }
 });
 
+router.get("/:id/notification", async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+
+    return res.json(user.notifications);
+  } catch (err) {
+    res.status(400).send("Can't get data\n" + err);
+  }
+});
+
+router.post("/:id/notification", async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+
+    user.notifications = req.body.notifications;
+    await user.save();
+
+    return res.status(200).send();
+  } catch (err) {
+    res.status(400).send("Can't get data\n" + err);
+  }
+});
+
 router.get("/:id", async (req, res) => {
   try {
     let user = await User.find({ oauth2Id: req.params.id }).exec();
@@ -91,6 +114,20 @@ router.put("/:id", async (req, res) => {
 
     await user.save();
     res.status(200).send("Updated Successfully");
+  } catch (err) {
+    res.status(400).send("Updated Fail\n" + err);
+  }
+});
+
+router.patch("/:id/relogin", async (req, res) => {
+  try {
+    let user = await User.find({ oauth2Id: req.params.id }).exec();
+    user = user[0];
+    user.username = req.body.username || user.username;
+    user.avatar = req.body.avatar || user.avatar;
+
+    const updatedUser = await user.save();
+    res.status(200).json(updatedUser);
   } catch (err) {
     res.status(400).send("Updated Fail\n" + err);
   }

@@ -30,9 +30,13 @@ io.on("connection", (socket) => {
     console.log(`User socketId: ${socket.id}`);
     console.log(`${socket.id} joining room id: ${roomId}`);
 
-    socket.on("project change", () => {
+    socket.on("project change", (notificationInfo) => {
       console.log(`reset project on ${roomId}`);
-      io.to(roomId).emit("reload project");
+      if (notificationInfo && notificationInfo.type && notificationInfo.type === 'add') {
+        io.to(roomId).emit("reload project", notificationInfo);
+      } else {
+        io.to(roomId).emit("reload project");
+      }
     });
 
     socket.on("new comment", (newCmt) => {
